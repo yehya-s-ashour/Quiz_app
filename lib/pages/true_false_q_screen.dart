@@ -1,50 +1,44 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:multi_quiz_s_t_tt9/Helpers.dart';
-import 'package:multi_quiz_s_t_tt9/widgets/multiple_button.dart';
 
 import '../constants.dart';
-import '../widgets/quiz_app_bar_row.dart';
+import '../modules/true_false/quizBrain.dart';
+import '../widgets/my_outline_btn.dart';
 import 'home.dart';
 
 class TrueFalseQuiz extends StatefulWidget {
-  const TrueFalseQuiz({super.key});
-
   @override
   _TrueFalseQuizState createState() => _TrueFalseQuizState();
 }
 
-class _TrueFalseQuizState extends State<TrueFalseQuiz> with Helpers{
-
+class _TrueFalseQuizState extends State<TrueFalseQuiz> {
+  QuizBrain quizBrain = QuizBrain();
 
   List<Icon> scoreKeeper = [];
-
+  bool anwerChoosen = false;
+  int? _choice;
+  Color answerColor1 = Colors.white;
+  Color answerfontColor1 = Colors.black;
+  Color answerColor2 = Colors.white;
+  Color answerfontColor2 = Colors.black;
   int counter = 10;
-  int score = 0;
-  bool? correctAnswer ;
-int questionNumber = 1 ;
-  bool isAnswered = false;
-  bool answerSelected = false;
 
-  late Timer _timer ;
+  int score = 0;
+
   void checkAnswer(bool userChoice) {
     bool correctAnswer = quizBrain.getQuestionAnswer();
-    bool isCorrect = userChoice == correctAnswer;
     setState(() {
-      answerSelected = true;
-      isAnswered = true;
-      if (isCorrect) {
+      if (correctAnswer == userChoice) {
         scoreKeeper.add(
-          const Icon(
+          Icon(
             Icons.check,
             color: Colors.green,
           ),
         );
-        score++;
       } else {
         scoreKeeper.add(
-          const Icon(
+          Icon(
             Icons.close,
             color: Colors.red,
           ),
@@ -52,73 +46,70 @@ int questionNumber = 1 ;
       }
     });
 
-    Timer(const Duration(milliseconds: 400), () {
-      setState(() {
-        isAnswered = false;
-      });
-      if (isCorrect) {
-        goToNextQuestion();
-      } else {
-        goToNextQuestion();
-        //counter = 10;
-      }
-    });
-  }
+    void showQuizFinishedDialog(BuildContext context) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Quiz Finished'),
+            content: Text(
+              'Congratulations! You have completed the quiz. $score / ${quizBrain.getSizeQuestions()}',
+              style: TextStyle(color: Colors.black),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HomePage(),
+                    ),
+                    (route) => false,
+                  );
+                },
+                child: const Text('Close'),
+              ),
+            ],
+          );
+        },
+      );
+    }
 
-  void goToNextQuestion() {
     if (quizBrain.isFinished()) {
-      _timer.cancel();
-      // From Helpers mixin
-      showQuizFinishedDialog(context,score,counter,quizBrain.getSizeQuestions());
-    } else {
-      setState(() {
-        counter = 10;
-        questionNumber++;
-        answerSelected = false;
-        quizBrain.nextQuestion();
+      showQuizFinishedDialog(context);
+
+      Timer(Duration(seconds: 1), () {
+        // Alert(context: context, title: "Finished", desc: "you are done").show();
+        setState(() {
+          quizBrain.reset();
+          scoreKeeper.clear();
+          score = 0;
+        });
       });
+    } else {
+      anwerChoosen = false;
+      quizBrain.nextQuestion();
     }
   }
 
-
-
   @override
   void initState() {
-   _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-setState(() {
-  if(counter>0){
-    counter--;
-  }
-
-});
-
-
+    Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        counter--;
+      });
       if (counter == 0) {
         // timer.cancel();
-        setState(() {
-
-            scoreKeeper.add(
-              const Icon(
-                Icons.close,
-                color: Colors.red,
-              ),
-            );
-
-
-        });
-
         counter = 10;
         quizBrain.nextQuestion();
-      //  checkAnswerColor = Colors.black38;
       }
-
+      ;
     });
     super.initState();
   }
 
   @override
   void dispose() {
-    _timer.cancel();
     super.dispose();
   }
 
@@ -126,7 +117,7 @@ setState(() {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration:const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
               kBlueBg,
@@ -142,18 +133,76 @@ setState(() {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              QuizAppBarRow(counter: counter,
-              pageNameWidget: const HomePage(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SizedBox(
+                    height: 44,
+                    width: 44,
+                    child: MYOutlineBtn(
+                      icon: Icons.close,
+                      iconColor: Colors.white,
+                      bColor: Colors.white,
+                      function: () {
+                        // Navigator.pop(context);
+                        // Navigator.pop(context);
+
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => HomePage(),
+                          ),
+                          (route) => false,
+                        );
+                      },
+                    ),
+                  ),
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        height: 56,
+                        width: 56,
+                        child: CircularProgressIndicator(
+                          value: counter / 10,
+                          color: Colors.white,
+                          backgroundColor: Colors.white12,
+                        ),
+                      ),
+                      Text(
+                        counter.toString(),
+                        style: TextStyle(
+                          fontFamily: 'Sf-Pro-Text',
+                          fontSize: 24,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      )
+                    ],
+                  ),
+                  OutlinedButton(
+                    onPressed: () {},
+                    child: Icon(
+                      Icons.favorite,
+                      color: Colors.white,
+                    ),
+                    style: OutlinedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        side: BorderSide(color: Colors.white)),
+                  ),
+                ],
               ),
               Expanded(
                 flex: 5,
                 child: Padding(
-                  padding:const EdgeInsets.all(10.0),
+                  padding: EdgeInsets.all(10.0),
                   child: Center(
                     child: Text(
                       quizBrain.getQuestionText(),
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 25.0,
                         color: Colors.white,
                       ),
@@ -163,47 +212,94 @@ setState(() {
               ),
               Expanded(
                 child: Padding(
-                  padding:const EdgeInsets.all(15.0),
-                  child: MultipleButton(
-                    onPressed: (){
-                      //The user picked true.
-                      checkAnswer(true);
-                      setState(() {
-                        counter = 10;
-                      });
-                    },
-                    title: 'True',
-                    backgroundColor: answerSelected && quizBrain.getQuestionAnswer() == true
-                        ? Colors.green
-                        : (isAnswered && quizBrain.getQuestionAnswer() != true ? Colors.red : Colors.white),
+                  padding: EdgeInsets.all(15.0),
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStatePropertyAll(answerColor1),
+                    ),
+                    child: Text(
+                      'True',
+                      style: TextStyle(
+                        color: answerfontColor1,
+                        fontSize: 20.0,
+                      ),
+                    ),
+                    onPressed: anwerChoosen
+                        ? null
+                        : () {
+                            if (quizBrain.getQuestionAnswer() == true) {
+                              score++;
+                              answerfontColor1 = Colors.white;
+                              answerColor1 = Colors.green;
+                            } else {
+                              answerfontColor1 = Colors.white;
 
+                              answerColor1 = Colors.red;
+                            }
+
+                            setState(() {
+                              counter = 10;
+                            });
+                            Timer(Duration(milliseconds: 500), () {
+                              setState(() {
+                                anwerChoosen = true;
+                                checkAnswer(true);
+                                answerColor1 = Colors.white;
+                                answerfontColor1 = Colors.black;
+                              });
+                            });
+                          },
                   ),
                 ),
               ),
               Expanded(
                 child: Padding(
-                  padding:const EdgeInsets.all(15.0),
-                  child: MultipleButton(
+                  padding: EdgeInsets.all(15.0),
+                  child: ElevatedButton(
+                    style: ButtonStyle().copyWith(
+                      backgroundColor: MaterialStatePropertyAll(answerColor2),
+                    ),
+                    child: Text(
+                      'False',
+                      style: TextStyle(
+                        fontSize: 20.0,
+                        color: answerfontColor2,
+                      ),
+                    ),
+                    onPressed: anwerChoosen
+                        ? null
+                        : () {
+                            print(score);
 
-                    onPressed: (){
-                      //The user picked true.
-                      checkAnswer(false);
-                      setState(() {
-                        counter = 10;
-                      });
-                    },
-                    title: 'False',
-                    backgroundColor: answerSelected && quizBrain.getQuestionAnswer() == false
-                        ? Colors.green
-                        : (isAnswered && quizBrain.getQuestionAnswer() != false ? Colors.red : Colors.white),
+                            if (quizBrain.getQuestionAnswer() == false) {
+                              score++;
+                              answerfontColor2 = Colors.white;
 
+                              answerColor2 = Colors.green;
+                            } else {
+                              answerfontColor2 = Colors.white;
+
+                              answerColor2 = Colors.red;
+                            }
+                            setState(() {
+                              counter = 10;
+                            });
+                            Timer(Duration(milliseconds: 500), () {
+                              setState(() {
+                                anwerChoosen = true;
+                                checkAnswer(false);
+                                answerColor2 = Colors.white;
+                                answerfontColor2 = Colors.black;
+                              });
+                            });
+                          },
                   ),
                 ),
               ),
               Wrap(
                 children: scoreKeeper,
               ),
-              const SizedBox(
+              SizedBox(
                 height: 72,
               )
             ],
@@ -213,4 +309,3 @@ setState(() {
     );
   }
 }
-

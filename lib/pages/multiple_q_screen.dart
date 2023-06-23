@@ -2,12 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:multi_quiz_s_t_tt9/Helpers.dart';
+import 'package:multi_quiz_s_t_tt9/constants.dart';
 import 'package:multi_quiz_s_t_tt9/modules/multipe_choice/quizBrainMultiple.dart';
 import 'package:multi_quiz_s_t_tt9/pages/home.dart';
 import 'package:multi_quiz_s_t_tt9/widgets/my_outline_btn.dart';
-
-import '../constants.dart';
-import '../widgets/multiple_button.dart';
 
 class MultiQScreen extends StatefulWidget {
   const MultiQScreen({Key? key}) : super(key: key);
@@ -23,12 +21,15 @@ class _MultiQScreenState extends State<MultiQScreen> with Helpers {
   int score = 0;
   QuizBrainMulti quizBrainMulti = QuizBrainMulti();
   int questionNumber = 1;
-
+  Color answerColor1 = Colors.white;
+  Color answerfontColor1 = Colors.black;
+  Color answerColor2 = Colors.white;
+  Color answerfontColor2 = Colors.black;
+  Color answerColor3 = Colors.white;
+  Color answerfontColor3 = Colors.black;
   bool isAnswered = false;
-  bool answerSelected = false;
 
-
- late Timer _timer ;
+  late Timer _timer;
 
   @override
   void initState() {
@@ -38,7 +39,7 @@ class _MultiQScreenState extends State<MultiQScreen> with Helpers {
           counter--;
         } else {
           //timer.cancel();
-        //  showQuizFinishedDialog(context);
+          //  showQuizFinishedDialog(context);
           goToNextQuestion();
           //checkAnswer(-1);
         }
@@ -58,7 +59,6 @@ class _MultiQScreenState extends State<MultiQScreen> with Helpers {
     int correctAnswer = quizBrainMulti.getQuestionAnswer();
     bool isCorrect = userChoice == correctAnswer;
     setState(() {
-      answerSelected = true;
       isAnswered = true;
       if (isCorrect) {
         scoreKeeper.add(
@@ -67,7 +67,6 @@ class _MultiQScreenState extends State<MultiQScreen> with Helpers {
             color: Colors.green,
           ),
         );
-        score++;
       } else {
         scoreKeeper.add(
           const Icon(
@@ -78,33 +77,30 @@ class _MultiQScreenState extends State<MultiQScreen> with Helpers {
       }
     });
 
-    Timer(const Duration(milliseconds: 400), () {
-      setState(() {
-        isAnswered = false;
-      });
-      if (isCorrect) {
-        goToNextQuestion();
-      } else {
-        goToNextQuestion();
-        //counter = 10;
-      }
+    setState(() {
+      isAnswered = false;
     });
+    if (isCorrect) {
+      goToNextQuestion();
+    } else {
+      goToNextQuestion();
+      //counter = 10;
+    }
   }
 
   void goToNextQuestion() {
     if (quizBrainMulti.isFinished()) {
-    _timer.cancel();
-      showQuizFinishedDialog(context,score,counter,quizBrainMulti.getLength());
+      _timer.cancel();
+      showQuizFinishedDialog(
+          context, score, counter, quizBrainMulti.getLength());
     } else {
       setState(() {
         counter = 10;
         questionNumber++;
-        answerSelected = false;
         quizBrainMulti.nextQuestion();
       });
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -142,7 +138,7 @@ class _MultiQScreenState extends State<MultiQScreen> with Helpers {
                           MaterialPageRoute(
                             builder: (context) => const HomePage(),
                           ),
-                              (route) => false,
+                          (route) => false,
                         );
                       },
                     ),
@@ -184,10 +180,16 @@ class _MultiQScreenState extends State<MultiQScreen> with Helpers {
                   )
                 ],
               ),
+              SizedBox(
+                height: 20,
+              ),
               Expanded(
                 child: Center(
                   child: Image.asset('assets/images/ballon-b.png'),
                 ),
+              ),
+              SizedBox(
+                height: 20,
               ),
               Text(
                 'question $questionNumber of $questionLength',
@@ -202,8 +204,9 @@ class _MultiQScreenState extends State<MultiQScreen> with Helpers {
               ),
               Text(
                 quizBrainMulti.getQuestionText(),
+                textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 32,
+                  fontSize: 25,
                   fontFamily: 'Sf-Pro-Text',
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -212,28 +215,177 @@ class _MultiQScreenState extends State<MultiQScreen> with Helpers {
               const SizedBox(
                 height: 48,
               ),
-              MultipleButton(
-                title: quizBrainMulti.getOptions().elementAt(0),
-                onPressed: isAnswered ? (){} : () => checkAnswer(0),
-                backgroundColor: answerSelected && quizBrainMulti.getQuestionAnswer() == 0
-                    ? Colors.green
-                    : (isAnswered && quizBrainMulti.getQuestionAnswer() != 0 ? Colors.red : Colors.white),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: ElevatedButton(
+                  onPressed: isAnswered
+                      ? null
+                      : () {
+                          if (quizBrainMulti.getQuestionAnswer() == 0) {
+                            score++;
+                            answerfontColor1 = Colors.white;
+                            answerColor1 = Colors.green;
+                          } else {
+                            answerfontColor1 = Colors.white;
+
+                            answerColor1 = Colors.red;
+                          }
+
+                          setState(() {
+                            counter = 10;
+                          });
+                          Timer(Duration(milliseconds: 500), () {
+                            setState(() {
+                              isAnswered = true;
+                              checkAnswer(0);
+                              answerColor1 = Colors.white;
+                              answerfontColor1 = Colors.black;
+                            });
+                          });
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: answerColor1,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 16),
+                  ),
+                  child: Row(
+                    children: [
+                      const SizedBox(
+                        width: 24,
+                      ),
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            quizBrainMulti.getOptions().elementAt(0),
+                            style: TextStyle(
+                                color: answerfontColor1,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 18),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              MultipleButton(
-                title: quizBrainMulti.getOptions().elementAt(1),
-                onPressed: isAnswered ? (){} : () => checkAnswer(1),
-                backgroundColor: answerSelected && quizBrainMulti.getQuestionAnswer() == 1
-                    ? Colors.green
-                    : (isAnswered && quizBrainMulti.getQuestionAnswer() != 1 ? Colors.red : Colors.white),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: ElevatedButton(
+                  onPressed: isAnswered
+                      ? null
+                      : () {
+                          if (quizBrainMulti.getQuestionAnswer() == 1) {
+                            score++;
+                            answerfontColor2 = Colors.white;
+                            answerColor2 = Colors.green;
+                          } else {
+                            answerfontColor2 = Colors.white;
+
+                            answerColor2 = Colors.red;
+                          }
+
+                          setState(() {
+                            counter = 10;
+                          });
+                          Timer(Duration(milliseconds: 500), () {
+                            setState(() {
+                              isAnswered = true;
+                              checkAnswer(1);
+                              answerColor2 = Colors.white;
+                              answerfontColor2 = Colors.black;
+                            });
+                          });
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: answerColor2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 16),
+                  ),
+                  child: Row(
+                    children: [
+                      const SizedBox(
+                        width: 24,
+                      ),
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            quizBrainMulti.getOptions().elementAt(1),
+                            style: TextStyle(
+                                color: answerfontColor2,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 18),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              MultipleButton(
-                title: quizBrainMulti.getOptions().elementAt(2),
-                onPressed: isAnswered ? (){} : () => checkAnswer(2),
-                backgroundColor: answerSelected && quizBrainMulti.getQuestionAnswer() == 2
-                    ? Colors.green
-                    : (isAnswered && quizBrainMulti.getQuestionAnswer() != 2 ? Colors.red : Colors.white),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: ElevatedButton(
+                  onPressed: isAnswered
+                      ? null
+                      : () {
+                          if (quizBrainMulti.getQuestionAnswer() == 2) {
+                            score++;
+                            answerfontColor3 = Colors.white;
+                            answerColor3 = Colors.green;
+                          } else {
+                            answerfontColor3 = Colors.white;
+
+                            answerColor3 = Colors.red;
+                          }
+
+                          setState(() {
+                            counter = 10;
+                          });
+                          Timer(Duration(milliseconds: 500), () {
+                            setState(() {
+                              isAnswered = true;
+                              checkAnswer(2);
+                              answerColor3 = Colors.white;
+                              answerfontColor3 = Colors.black;
+                            });
+                          });
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: answerColor3,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 16),
+                  ),
+                  child: Row(
+                    children: [
+                      const SizedBox(
+                        width: 24,
+                      ),
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            quizBrainMulti.getOptions().elementAt(2),
+                            style: TextStyle(
+                                color: answerfontColor3,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 18),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              Wrap(children: scoreKeeper,),
+              Wrap(
+                children: scoreKeeper,
+              ),
               const SizedBox(
                 height: 48,
               ),

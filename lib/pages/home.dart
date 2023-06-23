@@ -15,28 +15,22 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   List<Level> levels = [
-
     Level(
         title: 'True or False',
         subTitle: 'Level 1',
         colors: const [kL1, kL12],
-        iconData:  Icons.check,
+        iconData: Icons.check,
         routeName: '/true_false_screen',
         image: 'assets/images/bags.png'),
     Level(
-       routeName: '/multiple_choose_screen',
+        routeName: '/multiple_choose_screen',
         title: 'Multiple Choice',
         subTitle: 'Level 2',
-        colors:const[kL2, kL22],
-        iconData:  Icons.play_arrow,
+        colors: const [kL2, kL22],
+        iconData: Icons.play_arrow,
         image: 'assets/images/ballon-s.png'),
-
-
   ];
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -44,27 +38,41 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-
         actions: [
-
-          MYOutlineBtn(
-            padding: 8,
-            icon: Icons.favorite,
-            iconColor: kBlueIcon,
-            bColor: kGreyFont.withOpacity(0.5),
-            function: () {
-              // print("11111");
-            },
+          Padding(
+            padding: const EdgeInsetsDirectional.only(start: 10, end: 10),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                OutlinedButton(
+                  onPressed: () {},
+                  child: Icon(
+                    Icons.favorite,
+                    size: 25,
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: Size.zero,
+                    fixedSize: Size(40, 40),
+                    padding: EdgeInsets.all(0),
+                    shape: CircleBorder(),
+                  ),
+                ),
+                OutlinedButton(
+                  onPressed: () {},
+                  child: Icon(
+                    Icons.person_2,
+                    size: 30,
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: Size.zero,
+                    fixedSize: Size(40, 40),
+                    padding: EdgeInsets.all(0),
+                    shape: CircleBorder(),
+                  ),
+                ),
+              ],
+            ),
           ),
-          MYOutlineBtn(
-              padding: 8,
-              icon: Icons.person,
-              iconColor: kBlueIcon,
-              bColor: kGreyFont.withOpacity(0.5),
-              function: () {
-                // print("2222");
-              }),
-
         ],
       ),
       body: Padding(
@@ -92,36 +100,34 @@ class _HomePageState extends State<HomePage> {
                 fontFamily: kFontFamily,
               ),
             ),
-            const  SizedBox(
+            const SizedBox(
               height: 24,
             ),
-
             Expanded(
               child: ListView.builder(
                 itemCount: levels.length,
                 itemBuilder: (context, index) {
-                  return  MyLevelWidget(
-                      function: (){
-                        Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                            LevelDescription(
-                              routeName: levels[index].routeName,
-                                titleQuestion: levels[index].title,
-                                color: levels[index].colors,
-                                subTitle: levels[index].subTitle,
-                                imageSource: levels[index].image!),));
+                  return MyLevelWidget(
+                      function: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => LevelDescription(
+                                  routeName: levels[index].routeName,
+                                  titleQuestion: levels[index].title,
+                                  color: levels[index].colors,
+                                  subTitle: levels[index].subTitle,
+                                  imageSource: levels[index].image!),
+                            ));
                       },
                       icon: levels[index].iconData!,
                       title: levels[index].title,
                       subtitle: levels[index].subTitle,
                       image: levels[index].image!,
                       colors: levels[index].colors);
-
-                },),
+                },
+              ),
             )
-
-
-
-
           ],
         ),
       ),
